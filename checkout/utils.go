@@ -16,8 +16,6 @@ func GenerateHMAC(secret string, data string) (string, error) {
 
 	// create a new HMAC SHA-256
 	hmac := hmac.New(sha256.New, []byte(secret))
-
-	// write data to it
 	hmac.Write([]byte(data))
 
 	// return result as hexadecimal string
