@@ -14,13 +14,13 @@ func GenerateHMAC(secret string, data string) (string, error) {
 		return "", errors.New("secret or data is missing")
 	}
 
-	// create a new HMAC by defining the hash type and the key (as byte array)
-	h := hmac.New(sha256.New, []byte(secret))
+	// create a new HMAC SHA-256
+	hmac := hmac.New(sha256.New, []byte(secret))
 
 	// write data to it
-	h.Write([]byte(data))
+	hmac.Write([]byte(data))
 
-	// get result and encode as hexadecimal string
-	return hex.EncodeToString(h.Sum(nil)), nil
+	// return result hexadecimal string
+	return hex.EncodeToString(hmac.Sum(nil)), nil
 
 }
