@@ -20,7 +20,7 @@ func GenerateHMAC(secret string, data string) (string, error) {
 	// write data to it
 	hmac.Write([]byte(data))
 
-	// return result hexadecimal string
+	// return result as hexadecimal string
 	return hex.EncodeToString(hmac.Sum(nil)), nil
 
 }
