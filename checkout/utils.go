@@ -15,10 +15,10 @@ func GenerateHMAC(secret string, data string) (string, error) {
 	}
 
 	// create a new HMAC SHA-256
-	hmac := hmac.New(sha256.New, []byte(secret))
-	hmac.Write([]byte(data))
+	h := hmac.New(sha256.New, []byte(secret))
+	h.Write([]byte(data))
 
 	// return result as hexadecimal string
-	return hex.EncodeToString(hmac.Sum(nil)), nil
+	return hex.EncodeToString(h.Sum(nil)), nil
 
 }
