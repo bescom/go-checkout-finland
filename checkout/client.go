@@ -17,66 +17,6 @@ const (
 	defaultTimeout    = 10 // seconds
 )
 
-// Payment represents ...
-type Payment struct {
-	Stamp            string      `json:"stamp"`     // m
-	Reference        string      `json:"reference"` // m
-	Amount           int         `json:"amount"`    // m
-	Currency         string      `json:"currency"`  // m, EUR
-	Language         string      `json:"language"`  // m, FI/SV/EN
-	Items            []Item      `json:"items"`     // m
-	Customer         Customer    `json:"customer"`  // m
-	DeliveryAddress  Address     `json:"deliveryAddress"`
-	InvoicingAddress Address     `json:"invoicingAddress"`
-	RedirectUrls     CallbackURL `json:"redirectUrls"` // m
-	CallbackUrls     CallbackURL `json:"callbackUrls"`
-}
-
-// Item represents ...
-type Item struct {
-	UnitPrice     int    `json:"unitPrice"`     // m
-	Units         int    `json:"units"`         // m
-	VatPercentage int    `json:"vatPercentage"` // m
-	ProductCode   string `json:"productCode"`   // m
-	DeliveryDate  string `json:"deliveryDate"`  // m
-	Description   string `json:"description"`
-	Category      string `json:"category"`
-	Stamp         string `json:"stamp"`
-	Reference     string `json:"reference"` // m for shop-in-shop
-	//Merchant      string     `json:"merchant"` // only for shop-in-shop
-	//Commission    Commission `json:"commission"` // only for shop-in-shop
-}
-
-// Customer represents ...
-type Customer struct {
-	Email     string `json:"email"` // m
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Phone     string `json:"phone"`
-	VatID     string `json:"vatId"`
-}
-
-// Address represents ...
-type Address struct {
-	StreetAddress string `json:"streetAddress"` // m
-	PostalCode    string `json:"postalCode"`    // m
-	City          string `json:"city"`          // m
-	County        string `json:"county"`
-	Country       string `json:"country"` // m
-}
-
-// CallbackURL represents ...
-type CallbackURL struct {
-	Success string `json:"success"` // m
-	Cancel  string `json:"cancel"`  // m
-}
-
-// Commission represents ...
-type Commission struct {
-	Merchant string `json:"merchant"` // m
-	Amount   int    `json:"amount"`   // m
-}
-
 // Client represents an API client
 type Client struct {
 	merchantID string
@@ -101,9 +41,19 @@ func New(merchantID, secretKey string) *Client {
 }
 
 // CreatePayment performs a POST request ...
-func (c *Client) CreatePayment(p *Payment) ([]byte, error) {
-	json, _ := json.Marshal(p)
-	return c.executeRequest(http.MethodPost, "/payments", json)
+func (c *Client) CreatePayment(payment *Payment) (*PaymentResponse, error) {
+	p, _ := json.Marshal(payment)
+
+	r, err := c.executeRequest(http.MethodPost, "/payments", p)
+
+	var pr PaymentResponse
+	err1 := json.Unmarshal(r, &pr)
+
+	if err1 != nil {
+		fmt.Println("-- err1 : ", err1)
+	}
+
+	return &pr, err
 }
 
 // Performs the specified HTTP request and returns the response through handleResponse()
@@ -154,6 +104,8 @@ func (c *Client) executeRequest(method string, endpoint string, content []byte) 
 func handleResponse(response *http.Response) ([]byte, error) {
 	defer response.Body.Close()
 
+	fmt.Println("-- response.StatusCode : ", response.StatusCode)
+
 	// Return an error on unsuccessful requests
 	if response.StatusCode < 200 || response.StatusCode > 299 {
 		errorBody, _ := ioutil.ReadAll(response.Body)
@@ -166,8 +118,6 @@ func handleResponse(response *http.Response) ([]byte, error) {
 	}
 
 	responseBody, err := ioutil.ReadAll(response.Body)
-
-	fmt.Println(string(responseBody))
 
 	return responseBody, err
 }
@@ -183,5 +133,6 @@ func getHeaders(content []byte) string {
 	sb.WriteString(string(content))
 
 	h, _ := GenerateHMAC("SAIPPUAKAUPPIAS", sb.String())
+
 	return h
 }
