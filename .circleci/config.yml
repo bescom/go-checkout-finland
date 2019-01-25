@@ -5,12 +5,12 @@ jobs: # basic units of work in a run
       # CircleCI Go images available at: https://hub.docker.com/r/circleci/golang/
       - image: circleci/golang:1.8 #
       # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
-      - image: circleci/postgres:9.6-alpine
-        environment: # environment variables for primary container
-          POSTGRES_USER: circleci-demo-go
-          POSTGRES_DB: circle_test
+      #- image: circleci/postgres:9.6-alpine
+      #  environment: # environment variables for primary container
+      #    POSTGRES_USER: circleci-demo-go
+      #    POSTGRES_DB: circle_test
     # directory where steps are run. Path must conform to the Go Workspace requirements
-    working_directory: /go/src/github.com/CircleCI-Public/circleci-demo-go
+    working_directory: /go/src/github.com/bescom/go-checkout-finland
 
     environment: # environment variables for the build itself
       TEST_RESULTS: /tmp/test-results # path to where test results will be saved
@@ -32,22 +32,22 @@ jobs: # basic units of work in a run
 
       #  CircleCi's Go Docker image includes netcat
       #  This allows polling the DB port to confirm it is open before proceeding
-      - run:
-          name: Waiting for Postgres to be ready
-          command: |
-            for i in `seq 1 10`;
-            do
-              nc -z localhost 5432 && echo Success && exit 0
-              echo -n .
-              sleep 1
-            done
-            echo Failed waiting for Postgres && exit 1
+      #- run:
+      #    name: Waiting for Postgres to be ready
+      #    command: |
+      #      for i in `seq 1 10`;
+      #      do
+      #        nc -z localhost 5432 && echo Success && exit 0
+      #        echo -n .
+      #        sleep 1
+      #      done
+      #      echo Failed waiting for Postgres && exit 1
 
       - run:
           name: Run unit tests
-          environment: # environment variables for the database url and path to migration files
-            CONTACTS_DB_URL: "postgres://circleci-demo-go@localhost:5432/circle_test?sslmode=disable"
-            CONTACTS_DB_MIGRATIONS: /go/src/github.com/CircleCI-Public/circleci-demo-go/db/migrations
+          #environment: # environment variables for the database url and path to migration files
+          #  CONTACTS_DB_URL: "postgres://circleci-demo-go@localhost:5432/circle_test?sslmode=disable"
+          #  CONTACTS_DB_MIGRATIONS: /go/src/github.com/CircleCI-Public/circleci-demo-go/db/migrations
           # Store the results of our tests in the $TEST_RESULTS directory
           command: |
             trap "go-junit-report <${TEST_RESULTS}/go-test.out > ${TEST_RESULTS}/go-test-report.xml" EXIT
@@ -60,19 +60,19 @@ jobs: # basic units of work in a run
           paths:
             - "/go/pkg"
 
-      - run:
-          name: Start service
-          environment:
-            CONTACTS_DB_URL: "postgres://circleci-demo-go@localhost:5432/circle_test?sslmode=disable"
-            CONTACTS_DB_MIGRATIONS: /go/src/github.com/CircleCI-Public/circleci-demo-go/db/migrations
-          command: ./workdir/contacts
-          background: true # keep service running and proceed to next step
+      #- run:
+      #    name: Start service
+      #    environment:
+      #      CONTACTS_DB_URL: "postgres://circleci-demo-go@localhost:5432/circle_test?sslmode=disable"
+      #      CONTACTS_DB_MIGRATIONS: /go/src/github.com/CircleCI-Public/circleci-demo-go/db/migrations
+      #    command: ./workdir/contacts
+      #    background: true # keep service running and proceed to next step
 
-      - run:
-          name: Validate service is working
-          command: |
-            sleep 5
-            curl --retry 10 --retry-delay 1 -X POST --header "Content-Type: application/json" -d '{"email":"test@example.com","name":"Test User"}' http://localhost:8080/contacts
+      #- run:
+      #    name: Validate service is working
+      #    command: |
+      #      sleep 5
+      #      curl --retry 10 --retry-delay 1 -X POST --header "Content-Type: application/json" -d '{"email":"test@example.com","name":"Test User"}' http://localhost:8080/contacts
 
       - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
           path: /tmp/test-results
