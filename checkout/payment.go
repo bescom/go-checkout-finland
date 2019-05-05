@@ -62,7 +62,7 @@ type Commission struct {
 
 // PaymentResponse represents ...
 type PaymentResponse struct {
-	TransactionID string     `json:"transactionid"`
+	TransactionID string     `json:"transactionId"`
 	Href          string     `json:"href"`
 	Providers     []Provider `json:"providers"`
 }
@@ -82,4 +82,9 @@ type Provider struct {
 type Parameter struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
+}
+
+// AddItem ...
+func (p *Payment) AddItem(item Item) {
+	p.Items = append(p.Items, item)
 }
